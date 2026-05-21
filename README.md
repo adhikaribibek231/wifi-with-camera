@@ -1,1 +1,94 @@
-# wifi-with-camera
+
+# WiFi With Camera (WWC)
+
+Connect to WiFi networks by scanning WiFi QR codes with your webcam.
+
+WWC is a free and open-source desktop utility that lets you scan a WiFi QR code, read the WiFi details, and connect from your computer. After installation, it should work without needing an internet connection.
+
+## What It Does
+
+WWC uses your webcam to scan a WiFi QR code and extract:
+
+- WiFi name / SSID
+- Security type
+- Password
+
+After scanning, WWC can:
+
+- try to connect automatically
+- show the password on screen
+- let you manually copy/type the password if automatic connection fails
+
+This makes the app useful even when automatic connection does not work.
+
+## Why This Exists
+
+Phones can usually scan WiFi QR codes and connect quickly. Desktop systems, especially Linux desktops, often still require manually typing long passwords.
+
+WWC brings that simple scan-and-connect experience to desktop.
+
+## Offline First
+
+WWC is designed to work offline after installation.
+
+It does not require:
+
+- an account
+- internet access
+- a cloud service
+- telemetry
+- a backend server
+
+The QR code is scanned locally using the webcam.
+
+## Example WiFi QR Format
+
+```text
+WIFI:T:WPA;S:MyNetwork;P:MyPassword;;
+````
+
+## Planned Stack
+
+* Python
+* OpenCV
+* PyQt6
+* NetworkManager (`nmcli`) on Linux
+* `netsh wlan` on Windows
+
+## Current Status
+
+Early development / planning stage.
+
+## Goals
+
+The project aims to be:
+
+* lightweight
+* easy to install
+* cross-platform
+* privacy-friendly
+* contributor-friendly
+* useful for everyday users
+
+## Roadmap
+
+* [ ] Webcam scanning
+* [ ] QR detection
+* [ ] WiFi QR parser
+* [ ] Display SSID, security type, and password
+* [ ] Copy password button
+* [ ] Linux WiFi connector
+* [ ] Desktop GUI
+* [ ] Windows support
+* [ ] Installable builds
+
+## License
+
+MIT License (planned)
+
+---
+
+Built as an independent open-source project by Bibek Adhikari.
+
+```
+```
