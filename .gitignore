@@ -1,0 +1,22 @@
+# OpenCV Output Videos
+output.avi
+*.avi
+*.mp4
+
+# Python system files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Local Environment / Virtual Environments
+.venv/
+venv/
+env/
+ENV/
+
+# IDE and Editor Files
+.vscode/
+.idea/
+.DS_Store
+
