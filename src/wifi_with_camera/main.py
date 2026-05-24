@@ -1,3 +1,16 @@
+"""
+Main entry point for the WiFi QR Scanner application.
+
+This module orchestrates the workflow:
+  1. Capture video frame from camera using OpenCVScanner
+  2. Detect QR code in frame
+  3. Parse QR text to extract WiFi credentials
+  4. Connect to WiFi network using the connector
+
+The flow should be: main() -> scanner.scan() -> parser.parse() -> network.connect()
+At this stage, just print the parsed result. GUI comes later.
+"""
+
 import cv2
 
 

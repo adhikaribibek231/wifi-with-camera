@@ -21,6 +21,46 @@ After scanning, WWC can:
 
 This makes the app useful even when automatic connection does not work.
 
+## Project Structure
+
+```
+wifi-with-camera/
+├── README.md
+├── pyproject.toml
+├── uv.lock
+├── .python-version
+├── .gitignore
+├── src/
+│   └── wifi_with_camera/
+│       ├── __init__.py
+│       ├── main.py                 # App entry point, coordinates workflow
+│       ├── scanner/
+│       │   ├── __init__.py
+│       │   └── opencv_scanner.py  # Camera + QR detection
+│       ├── parser/
+│       │   ├── __init__.py
+│       │   └── wifi_qr_parser.py  # Parse QR text to WiFi credentials
+│       ├── network/
+│       │   ├── __init__.py
+│       │   ├── base.py            # Abstract connector interface
+│       │   └── linux_nmcli.py     # Linux-specific WiFi connector
+│       └── ui/
+│           ├── __init__.py
+│           └── simple_window.py   # PyQt GUI (future)
+└── tests/
+    ├── test_wifi_qr_parser.py
+    └── test_linux_nmcli.py
+```
+
+### Module Overview
+
+- **main.py**: Orchestrates the workflow (scanner → parser → connector)
+- **scanner/opencv_scanner.py**: Captures video frames and detects QR codes
+- **parser/wifi_qr_parser.py**: Converts QR text (WIFI:T:WPA;S:SSID;P:PASSWORD;;) to structured data
+- **network/base.py**: Defines the abstract `Connector` interface for WiFi connections
+- **network/linux_nmcli.py**: Implements WiFi connection using `nmcli` on Linux
+- **ui/simple_window.py**: PyQt GUI (not implemented yet)
+
 ## Why This Exists
 
 Phones can usually scan WiFi QR codes and connect quickly. Desktop systems, especially Linux desktops, often still require manually typing long passwords.
