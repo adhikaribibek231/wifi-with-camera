@@ -1,9 +1,42 @@
 [project]
 name = "wifi-with-camera"
 version = "0.1.0"
-description = "Add your description here"
+description = "Scan WiFi QR codes with your webcam and connect automatically on Linux"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "opencv-python>=4.13.0.92",
 ]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/wifi_with_camera"]
+
+[project.scripts]
+wwc = "wifi_with_camera.main:main"
+
+[project.urls]
+Repository = "https://github.com/adhikaribibek231/wifi-with-camera"
+
+[dependency-groups]
+dev = [
+    "mypy>=2.1.0",
+    "pre-commit>=4.6.0",
+    "pytest>=9.0.3",
+    "ruff>=0.15.12",
+]
+
+[tool.mypy]
+python_version = "3.12"
+files = ["src", "tests"]
+strict = true
+
+[tool.ruff]
+target-version = "py312"
+line-length = 88
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

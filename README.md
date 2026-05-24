@@ -28,6 +28,7 @@ wifi-with-camera/
 ├── README.md
 ├── pyproject.toml
 ├── uv.lock
+├── .pre-commit-config.yaml
 ├── .python-version
 ├── .gitignore
 ├── src/
@@ -61,6 +62,47 @@ wifi-with-camera/
 - **network/linux_nmcli.py**: Implements WiFi connection using `nmcli` on Linux
 - **ui/simple_window.py**: PyQt GUI (not implemented yet)
 
+## Development Setup
+
+This project uses `uv` for dependency management and Hatchling for Python packaging.
+
+Install the project and development tools:
+
+```bash
+uv sync
+```
+
+After syncing, the CLI entry point should be available:
+
+```bash
+uv run wwc
+```
+
+If you activate the virtual environment, you can also run:
+
+```bash
+source .venv/bin/activate
+wwc
+```
+
+Install pre-commit hooks once per clone:
+
+```bash
+uv run pre-commit install
+```
+
+Run the checks manually:
+
+```bash
+uv run ruff check .
+uv run ruff format .
+uv run mypy
+uv run pytest
+uv run pre-commit run --all-files
+```
+
+The current pre-commit setup runs Ruff formatting/linting and mypy.
+
 ## Why This Exists
 
 Phones can usually scan WiFi QR codes and connect quickly. Desktop systems, especially Linux desktops, often still require manually typing long passwords.
@@ -85,15 +127,16 @@ The QR code is scanned locally using the webcam.
 
 ```text
 WIFI:T:WPA;S:MyNetwork;P:MyPassword;;
-````
+```
 
 ## Planned Stack
 
 * Python
 * OpenCV
-* PyQt6
+* PyQt6 for the future desktop GUI
 * NetworkManager (`nmcli`) on Linux
 * `netsh wlan` on Windows
+* uv, Hatchling, Ruff, Mypy, Pytest, and pre-commit for development
 
 ## Current Status
 
@@ -129,6 +172,3 @@ MIT License (planned)
 ---
 
 Built as an independent open-source project by Bibek Adhikari.
-
-```
-```
