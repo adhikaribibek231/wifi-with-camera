@@ -444,7 +444,7 @@ Scan a Wi-Fi QR code and help the user connect from desktop.
 - [x] Extract security type
 - [x] Extract password
 - [ ] Handle open networks
-- [ ] Add parser tests
+- [x] Add parser tests
 
 ### Phase 3: Basic Result Display
 
