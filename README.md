@@ -431,18 +431,18 @@ Scan a Wi-Fi QR code and help the user connect from desktop.
 
 ### Phase 1: Basic Scanner
 
-- [ ] Open webcam
-- [ ] Show camera preview
-- [ ] Detect QR code
-- [ ] Decode QR text
-- [ ] Handle closing the camera window safely
+- [x] Open webcam
+- [x] Show camera preview
+- [x] Detect QR code
+- [x] Decode QR text
+- [x] Handle closing the camera window safely
 
 ### Phase 2: Wi-Fi QR Parser
 
-- [ ] Parse standard Wi-Fi QR format
-- [ ] Extract SSID
-- [ ] Extract security type
-- [ ] Extract password
+- [x] Parse standard Wi-Fi QR format
+- [x] Extract SSID
+- [x] Extract security type
+- [x] Extract password
 - [ ] Handle open networks
 - [ ] Add parser tests
 

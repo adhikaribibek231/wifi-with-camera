@@ -40,14 +40,44 @@ Example:
 #     }
 
 
+def split_unescaped_semicolons(text: str) -> list[str]:
+    parts: list[str] = []
+    current: list[str] = []
+    escaped = False
+
+    for char in text:
+        if escaped:
+            current.append(char)
+            escaped = False
+            continue
+
+        if char == "\\":
+            escaped = True
+            continue
+
+        if char == ";":
+            parts.append("".join(current))
+            current = []
+            continue
+
+        current.append(char)
+
+    if escaped:
+        current.append("\\")
+
+    parts.append("".join(current))
+
+    return parts
+
+
 def parse(qr_text: str) -> dict[str, str | None]:
     if not qr_text.startswith("WIFI:"):
         raise ValueError("Not a WiFi QR code")
 
     content = qr_text.removeprefix("WIFI:")
-    parts = content.split(";")
+    parts = split_unescaped_semicolons(content)
 
-    data = {}
+    data: dict[str, str] = {}
 
     for part in parts:
         if part == "":
