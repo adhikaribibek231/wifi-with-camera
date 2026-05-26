@@ -24,21 +24,6 @@ Example:
     # Returns: {"ssid": "HomeWifi", "password": "secret123", "security": "WPA"}
 """
 
-
-# scuffed v0
-# def parse(qr_text: str) -> dict[str, str]:
-#     x = qr_text.split(";")
-#     print("X:", x)
-#     extract = x[1:3]
-#     print("Extract:", extract)
-#     result = dict(item.split(":") for item in extract)
-#     sec = x[0].split(":")
-#     return {
-#         "ssid": result.get("S", ""),
-#         "password": result.get("P", ""),
-#         "security": sec[2],
-#     }
-
 from dataclasses import dataclass
 
 
