@@ -1,5 +1,5 @@
 """
-Simple PyQt GUI for WiFi QR Scanner (future implementation).
+Simple PyQt GUI for Wi-Fi QR Scanner (future implementation).
 
 Responsibilities:
   - Display camera feed from scanner
@@ -13,6 +13,6 @@ working first. GUI can be added later once the core pipeline is solid.
 Placeholder for future development:
   - Create main window
   - Integrate camera preview
-  - Show WiFi connection status
+  - Show Wi-Fi connection status
   - Button for cancel/retry
 """

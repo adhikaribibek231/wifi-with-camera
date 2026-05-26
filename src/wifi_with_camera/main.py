@@ -1,14 +1,12 @@
 """
-Main entry point for the WiFi QR Scanner application.
+Main entry point for the Wi-Fi QR Scanner application.
 
 This module orchestrates the workflow:
   1. Capture video frame from camera using OpenCVScanner
-  2. Detect QR code in frame
-  3. Parse QR text to extract WiFi credentials
-  4. Connect to WiFi network using the connector
-
-The flow should be: main() -> scanner.scan() -> parser.parse() -> network.connect()
-At this stage, just print the parsed result. GUI comes later.
+  2. Detect a QR code in the frame
+  3. Parse QR text to extract Wi-Fi credentials
+  4. Display the parsed result
+  5. Optionally connect to the Wi-Fi network using the Linux nmcli backend
 """
 
 from wifi_with_camera.display.result_display import display_credentials, display_error
@@ -32,7 +30,7 @@ def main() -> None:
         return
 
     display_credentials(credentials)
-    should_connect = input("\nConnect to this Wifi network? [y/N]: ").strip().lower()
+    should_connect = input("\nConnect to this Wi-Fi network? [y/N]: ").strip().lower()
 
     if should_connect != "y":
         print("Connection cancelled.")
@@ -40,7 +38,7 @@ def main() -> None:
     try:
         connection_result = connect_to_wifi(credentials)
     except NetworkConnectionError as error:
-        print("\nCould not connect to WiFi")
+        print("\nCould not connect to Wi-Fi")
         print("-" * 30)
         print(error)
         return

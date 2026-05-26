@@ -1,7 +1,7 @@
 [project]
 name = "wifi-with-camera"
 version = "0.1.0"
-description = "Scan WiFi QR codes with your webcam and connect automatically on Linux"
+description = "Scan Wi-Fi QR codes with your webcam and connect automatically on Linux"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [

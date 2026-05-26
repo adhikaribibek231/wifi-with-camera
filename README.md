@@ -1,10 +1,12 @@
-# WiFi With Camera (WWC)
+# Wi-Fi With Camera (WWC)
 
 Connect to Wi-Fi networks by scanning Wi-Fi QR codes with your webcam.
 
-WWC is a free and open-source desktop utility that lets you scan a Wi-Fi QR code, read the Wi-Fi details, and connect from your computer. The goal is to bring the phone-like "scan and connect" Wi-Fi experience to desktop systems.
+WWC is a desktop utility that lets you scan a Wi-Fi QR code, read the Wi-Fi details, and connect from your computer. The goal is to bring the phone-like "scan and connect" Wi-Fi experience to desktop systems.
 
-The project is currently Linux-first, with Windows support planned.
+The project is currently Linux-first, with Windows support planned. The current
+MVP scans a QR code, parses the Wi-Fi credentials, prints a copy-friendly result,
+and can optionally try to connect on Linux through NetworkManager's `nmcli`.
 
 > WWC is not currently designed as a PyPI package for end users.  
 > The Python packaging setup exists mainly to keep the project clean, installable in development, and easy to run locally with `uv run wwc`.
@@ -23,8 +25,8 @@ After scanning, WWC can:
 
 - display the detected Wi-Fi details
 - show the password locally on screen
-- let you copy the password manually
-- try to connect automatically when supported by the operating system
+- print copy-friendly `SSID`, `SECURITY`, and `PASSWORD` lines
+- try to connect automatically on Linux when `nmcli` is available
 
 This means the app is still useful even if automatic Wi-Fi connection fails.
 
@@ -92,7 +94,6 @@ wifi-with-camera/
 ├── .pre-commit-config.yaml
 ├── .python-version
 ├── .gitignore
-├── LICENSE
 │
 ├── src/
 │   └── wifi_with_camera/
@@ -110,8 +111,11 @@ wifi-with-camera/
 │       ├── network/
 │       │   ├── __init__.py
 │       │   ├── base.py
-│       │   ├── linux_nmcli.py
-│       │   └── windows_netsh.py
+│       │   └── linux_nmcli.py
+│       │
+│       ├── display/
+│       │   ├── __init__.py
+│       │   └── result_display.py
 │       │
 │       └── ui/
 │           ├── __init__.py
@@ -122,7 +126,7 @@ wifi-with-camera/
     └── test_linux_nmcli.py
 ```
 
-Some files may be placeholders during early development.
+Some files are placeholders during early development.
 
 ---
 
@@ -135,7 +139,7 @@ Application entry point.
 This file coordinates the main workflow:
 
 ```text
-scanner -> parser -> network connector -> result display
+scanner -> parser -> result display -> optional Linux network connector
 ```
 
 For local development, this file exposes a `main()` function so the app can be run using:
@@ -186,11 +190,13 @@ This module should be highly testable because it does not need a camera or real 
 
 ### `network/base.py`
 
-Defines the common interface for Wi-Fi connection backends.
+Defines shared network result and error types:
 
-The purpose of this file is to keep platform-specific code separated from the rest of the app.
+- `ConnectionResult`
+- `NetworkConnectionError`
 
-Linux and Windows connect to Wi-Fi differently, but the main app should be able to use both through a shared interface.
+The purpose of this file is to keep connection result handling consistent while
+platform-specific code stays separated from the rest of the app.
 
 ---
 
@@ -198,24 +204,31 @@ Linux and Windows connect to Wi-Fi differently, but the main app should be able 
 
 Linux-specific Wi-Fi connector using NetworkManager's `nmcli`.
 
-Planned responsibilities:
+Responsibilities:
 
 - check whether `nmcli` is available
-- check whether NetworkManager is being used
+- build the `nmcli device wifi connect ...` command
 - attempt Wi-Fi connection using SSID and password
-- return clear success/failure messages
+- support open networks without a password argument
+- return clear success messages
+- raise clear connection errors
 
-This is the first automatic connection backend planned for the project.
+This is the first automatic connection backend in the project.
 
 ---
 
-### `network/windows_netsh.py`
+### `display/result_display.py`
 
-Windows-specific Wi-Fi connector using `netsh wlan`.
+Prints parsed Wi-Fi credentials and user-facing parse errors.
 
-This is planned for later.
+The current CLI output includes a readable result section and copy-friendly
+environment-style lines:
 
-Windows support may require different handling because connecting to a Wi-Fi network usually involves creating or updating a WLAN profile before connecting.
+```text
+SSID=MyNetwork
+SECURITY=WPA
+PASSWORD=MyPassword
+```
 
 ---
 
@@ -223,7 +236,8 @@ Windows support may require different handling because connecting to a Wi-Fi net
 
 Future desktop GUI.
 
-The first version of the project may use a simple OpenCV camera window. Later, this module can become the home of a real desktop interface.
+The first version of the project uses a simple OpenCV camera window. Later, this
+module can become the home of a real desktop interface.
 
 Possible future GUI features:
 
@@ -380,13 +394,20 @@ Future distribution options:
 
 Early development.
 
-The current focus is to build a working Linux-first MVP:
+The current Linux-first MVP flow is:
 
 ```text
-Open webcam -> scan QR code -> parse Wi-Fi credentials -> display result
+Open webcam -> scan QR code -> parse Wi-Fi credentials -> display result -> optionally connect with nmcli
 ```
 
-After that, the next goal is Linux auto-connect support through `nmcli`.
+Implemented so far:
+
+- webcam QR scanning with OpenCV
+- Wi-Fi QR parsing into a `WifiCredentials` dataclass
+- escaped semicolon and colon handling in SSIDs and passwords
+- result display with copy-friendly output
+- Linux `nmcli` command building and optional connection attempt
+- parser and Linux command-builder tests
 
 Windows support and a polished desktop GUI are planned later.
 
@@ -504,11 +525,9 @@ For that reason:
 
 ---
 
-## License(No idea yet)
+## License
 
-MIT License.
-
-See the `LICENSE` file for details.
+No license file has been added yet.
 
 ---
 

@@ -1,30 +1,32 @@
 """
-Linux NetworkManager CLI (nmcli) connector for WiFi connections.
+Linux NetworkManager CLI (nmcli) connector for Wi-Fi connections.
 
 Responsibilities:
-  - Implement WiFi connection using nmcli command-line tool
+  - Implement Wi-Fi connection using the nmcli command-line tool
   - Handle Linux-specific connection logic
-  - Execute shell commands to manage WiFi networks
+  - Execute shell commands to manage Wi-Fi networks
 
-Class:
-  LinuxNMCliConnector(Connector)
-      Implements connect() using subprocess to call nmcli commands.
-      Typical flow:
-        1. nmcli dev wifi connect <SSID> password <PASSWORD>
-        2. Handle errors (already connected, invalid password, etc.)
-        3. Return success/failure status
+Functions:
+  is_nmcli_available() -> bool
+      Checks whether nmcli is available on the current system.
+
+  build_nmcli_connect_command(credentials: WifiCredentials) -> list[str]
+      Builds the nmcli command without executing it.
+
+  connect_to_wifi(credentials: WifiCredentials) -> ConnectionResult
+      Attempts to connect to the Wi-Fi network and returns a result.
 
 Example:
-    connector = LinuxNMCliConnector()
-    credentials = {"ssid": "HomeWifi", "password": "secret123", "security": "WPA"}
-    if connector.connect(credentials):
-        print("Connected!")
-    else:
-        print("Failed to connect")
+    credentials = WifiCredentials(
+        ssid="HomeWifi",
+        password="secret123",
+        security="WPA",
+    )
+    result = connect_to_wifi(credentials)
+    print(result.message)
 
 Note:
   Requires nmcli to be installed on the system.
-  May require sudo for some operations.
 """
 
 import shutil
@@ -60,17 +62,17 @@ def connect_to_wifi(credentials: WifiCredentials) -> ConnectionResult:
     result = subprocess.run(command, capture_output=True, text=True, check=False)
     if result.returncode == 0:
         return ConnectionResult(
-            success=True, message=f"Successfully connectied to {credentials.ssid}"
+            success=True, message=f"Successfully connected to {credentials.ssid}"
         )
 
     error_output = result.stderr.strip() or result.stdout.strip()
 
     if "No network with SSID" in error_output:
-        raise NetworkConnectionError(f"Wifi network not found: {credentials.ssid}")
+        raise NetworkConnectionError(f"Wi-Fi network not found: {credentials.ssid}")
 
     if "Secrets were required" in error_output or "password" in error_output.lower():
         raise NetworkConnectionError(
-            "Could not connect. The WiFi password may be wrong."
+            "Could not connect. The Wi-Fi password may be wrong."
         )
 
-    raise NetworkConnectionError(f"Could not connect to Wifi: {error_output}")
+    raise NetworkConnectionError(f"Could not connect to Wi-Fi: {error_output}")

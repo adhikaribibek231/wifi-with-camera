@@ -2,7 +2,7 @@ from wifi_with_camera.parser.wifi_qr_parser import WifiCredentials
 
 
 def display_credentials(credentials: WifiCredentials) -> None:
-    print("\nWiFi QR Result")
+    print("\nWi-Fi QR Result")
     print("-" * 30)
     print(f"SSID:     {credentials.ssid}")
     print(f"Security: {credentials.security}")
@@ -20,6 +20,6 @@ def display_credentials(credentials: WifiCredentials) -> None:
 
 
 def display_error(message: str) -> None:
-    print("\nCould not parse WiFi QR code")
+    print("\nCould not parse Wi-Fi QR code")
     print("-" * 30)
     print(message)

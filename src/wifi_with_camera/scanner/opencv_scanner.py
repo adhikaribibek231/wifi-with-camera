@@ -22,7 +22,7 @@ import cv2
 
 
 def scan() -> str | None:
-    window_name = "WiFi QR Scanner"
+    window_name = "Wi-Fi QR Scanner"
 
     cap = cv2.VideoCapture(0)
     detector = cv2.QRCodeDetector()

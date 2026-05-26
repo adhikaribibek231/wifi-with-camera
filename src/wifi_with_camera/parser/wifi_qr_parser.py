@@ -1,12 +1,12 @@
 """
-WiFi QR code parser module.
+Wi-Fi QR code parser module.
 
 Responsibilities:
-  - Parse raw QR text in WiFi standard format (WIFI:T:WPA;S:SSID;P:PASSWORD;;)
-  - Extract WiFi credentials (SSID, password, security type)
+  - Parse raw QR text in Wi-Fi standard format (WIFI:T:WPA;S:SSID;P:PASSWORD;;)
+  - Extract Wi-Fi credentials (SSID, password, security type)
   - Return structured data
 
-WiFi QR Format:
+Wi-Fi QR Format:
   WIFI:T:<security>;S:<SSID>;P:<password>;;
 
   Examples:
@@ -15,13 +15,13 @@ WiFi QR Format:
     - WIFI:T:nopass;S:PublicWifi;;
 
 Functions:
-  parse(qr_text: str) -> dict
-      Extracts WiFi credentials from QR text.
-      Returns dict with keys: ssid, password, security
+  parse(qr_text: str) -> WifiCredentials
+      Extracts Wi-Fi credentials from QR text.
+      Returns structured credentials with ssid, password, and security fields.
 
 Example:
     result = parse("WIFI:T:WPA;S:HomeWifi;P:secret123;;")
-    # Returns: {"ssid": "HomeWifi", "password": "secret123", "security": "WPA"}
+    # Returns: WifiCredentials(ssid="HomeWifi", password="secret123", security="WPA")
 """
 
 from dataclasses import dataclass
@@ -66,7 +66,7 @@ def split_unescaped_semicolons(text: str) -> list[str]:
 
 def parse(qr_text: str) -> WifiCredentials:
     if not qr_text.startswith("WIFI:"):
-        raise ValueError("Not a WiFi QR code")
+        raise ValueError("Not a Wi-Fi QR code")
 
     content = qr_text.removeprefix("WIFI:")
     parts = split_unescaped_semicolons(content)
@@ -88,10 +88,10 @@ def parse(qr_text: str) -> WifiCredentials:
     password = data.get("P")
 
     if not ssid:
-        raise ValueError("WiFi QR code does not contain an SSID")
+        raise ValueError("Wi-Fi QR code does not contain an SSID")
 
     if security != "nopass" and not password:
-        raise ValueError("Secured WiFi QR code does not contain a password")
+        raise ValueError("Secured Wi-Fi QR code does not contain a password")
 
     return WifiCredentials(
         ssid=ssid,
