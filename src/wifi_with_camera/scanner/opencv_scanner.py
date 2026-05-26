@@ -38,12 +38,13 @@ def scan() -> str | None:
 
         while True:
             ret, frame = cap.read()
-
+            # ret = whether camera reading succeeded or not True or False
             if not ret:
                 print("Error: Could not read frame from webcam.")
                 break
 
-            data, points, _ = detector.detectAndDecode(frame)
+            data, points, _ = detector.detectAndDecode(frame)  # most important line
+            # points contains the QR code boundary coordinates.
             display_frame = cv2.flip(frame, 1)
 
             if data:
@@ -55,6 +56,7 @@ def scan() -> str | None:
 
                     mirrored_points = points[0].astype(int)
                     mirrored_points[:, 0] = frame_width - 1 - mirrored_points[:, 0]
+                    # Mirror the x-coordinates because the displayed frame was flipped horizontally (valid x range: 0 to frame_width-1)
 
                     for i in range(len(mirrored_points)):
                         pt1 = tuple(mirrored_points[i])
@@ -72,7 +74,7 @@ def scan() -> str | None:
                 )
 
                 cv2.imshow(window_name, display_frame)
-                cv2.waitKey(1200)
+                cv2.waitKey(2000)
                 break
 
             cv2.imshow(window_name, display_frame)
