@@ -11,6 +11,7 @@ The flow should be: main() -> scanner.scan() -> parser.parse() -> network.connec
 At this stage, just print the parsed result. GUI comes later.
 """
 
+from wifi_with_camera.parser.wifi_qr_parser import parse
 from wifi_with_camera.scanner.opencv_scanner import scan
 
 
@@ -21,6 +22,8 @@ def main() -> None:
         return
     print("\nFinal detected QR content: ")
     print(qr_text)
+    result = parse(qr_text)
+    print(result)
 
 
 if __name__ == "__main__":
