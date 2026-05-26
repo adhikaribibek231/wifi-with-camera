@@ -11,6 +11,7 @@ The flow should be: main() -> scanner.scan() -> parser.parse() -> network.connec
 At this stage, just print the parsed result. GUI comes later.
 """
 
+from wifi_with_camera.display.result_display import display_credentials, display_error
 from wifi_with_camera.parser.wifi_qr_parser import parse
 from wifi_with_camera.scanner.opencv_scanner import scan
 
@@ -19,27 +20,16 @@ def main() -> None:
     qr_text = scan()
 
     if qr_text is None:
-        print("No QR code detected.")
+        display_error("No QR code detected.")
         return
-
-    print("\nFinal detected QR content:")
-    print(qr_text)
 
     try:
         credentials = parse(qr_text)
     except ValueError as error:
-        print("\nInvalid WiFi QR code:")
-        print(error)
+        display_error(str(error))
         return
 
-    print("\nParsed WiFi credentials:")
-    print(f"SSID: {credentials.ssid}")
-    print(f"Security: {credentials.security}")
-
-    if credentials.password is None:
-        print("Password: None")
-    else:
-        print(f"Password: {credentials.password}")
+    display_credentials(credentials)
 
 
 if __name__ == "__main__":

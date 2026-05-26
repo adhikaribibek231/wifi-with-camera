@@ -443,7 +443,7 @@ Scan a Wi-Fi QR code and help the user connect from desktop.
 - [x] Extract SSID
 - [x] Extract security type
 - [x] Extract password
-- [ ] Handle open networks
+- [x] Handle open networks
 - [x] Add parser tests
 
 ### Phase 3: Basic Result Display
