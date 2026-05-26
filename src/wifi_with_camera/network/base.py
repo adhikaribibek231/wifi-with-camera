@@ -19,3 +19,15 @@ Example:
     credentials = {"ssid": "HomeWifi", "password": "secret123", "security": "WPA"}
     success = connector.connect(credentials)
 """
+
+from dataclasses import dataclass
+
+
+@dataclass
+class ConnectionResult:
+    success: bool
+    message: str
+
+
+class NetworkConnectionError(RuntimeError):
+    pass

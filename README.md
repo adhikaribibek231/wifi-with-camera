@@ -448,19 +448,19 @@ Scan a Wi-Fi QR code and help the user connect from desktop.
 
 ### Phase 3: Basic Result Display
 
-- [ ] Display SSID
-- [ ] Display security type
-- [ ] Display password
-- [ ] Add copy-friendly output
-- [ ] Add clear error messages for invalid QR codes
+- [x] Display SSID
+- [x] Display security type
+- [x] Display password
+- [x] Add copy-friendly output
+- [x] Add clear error messages for invalid QR codes
 
 ### Phase 4: Linux Auto-Connect
 
-- [ ] Detect whether `nmcli` is available
-- [ ] Connect using NetworkManager
-- [ ] Handle wrong password errors
-- [ ] Handle unavailable SSID errors
-- [ ] Show clear success/failure messages
+- [x] Detect whether `nmcli` is available
+- [x] Connect using NetworkManager
+- [x] Handle wrong password errors
+- [x] Handle unavailable SSID errors
+- [x] Show clear success/failure messages
 
 ### Phase 5: Desktop GUI
 

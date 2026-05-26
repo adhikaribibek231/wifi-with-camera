@@ -12,6 +12,8 @@ At this stage, just print the parsed result. GUI comes later.
 """
 
 from wifi_with_camera.display.result_display import display_credentials, display_error
+from wifi_with_camera.network.base import NetworkConnectionError
+from wifi_with_camera.network.linux_nmcli import connect_to_wifi
 from wifi_with_camera.parser.wifi_qr_parser import parse
 from wifi_with_camera.scanner.opencv_scanner import scan
 
@@ -30,6 +32,19 @@ def main() -> None:
         return
 
     display_credentials(credentials)
+    should_connect = input("\nConnect to this Wifi network? [y/N]: ").strip().lower()
+
+    if should_connect != "y":
+        print("Connection cancelled.")
+        return
+    try:
+        connection_result = connect_to_wifi(credentials)
+    except NetworkConnectionError as error:
+        print("\nCould not connect to WiFi")
+        print("-" * 30)
+        print(error)
+        return
+    print(connection_result.message)
 
 
 if __name__ == "__main__":
