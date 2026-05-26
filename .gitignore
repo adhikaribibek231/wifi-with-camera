@@ -1,22 +1,61 @@
-# OpenCV Output Videos
-output.avi
-*.avi
-*.mp4
-
-# Python system files
+# Byte-compiled / optimized Python files
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
+*$py.class
 
-# Local Environment / Virtual Environments
+# Python build and packaging output
+build/
+dist/
+*.egg-info/
+*.egg
+.eggs/
+pip-wheel-metadata/
+
+# Virtual environments
 .venv/
 venv/
 env/
 ENV/
 
-# IDE and Editor Files
+# Test, type-checker, and linter caches
+.coverage
+.coverage.*
+htmlcov/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.tox/
+.nox/
+
+# Local configuration and secrets
+.env
+.env.*
+!.env.example
+*.local
+
+# OpenCV / camera capture output
+output.avi
+*.avi
+*.mp4
+*.mov
+*.mkv
+*.webm
+captures/
+recordings/
+
+# Logs and runtime files
+*.log
+*.pid
+*.pid.lock
+
+# IDE, editor, and OS files
 .vscode/
 .idea/
 .DS_Store
+Thumbs.db
 
+# Local agent/tool metadata
+.agents/
+.codex/
