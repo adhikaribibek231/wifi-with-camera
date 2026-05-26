@@ -25,15 +25,42 @@ Example:
 """
 
 
-def parse(qr_text: str) -> dict[str, str]:
-    x = qr_text.split(";")
-    print("X:", x)
-    extract = x[1:3]
-    print("Extract:", extract)
-    result = dict(item.split(":") for item in extract)
-    sec = x[0].split(":")
+# scuffed v0
+# def parse(qr_text: str) -> dict[str, str]:
+#     x = qr_text.split(";")
+#     print("X:", x)
+#     extract = x[1:3]
+#     print("Extract:", extract)
+#     result = dict(item.split(":") for item in extract)
+#     sec = x[0].split(":")
+#     return {
+#         "ssid": result.get("S", ""),
+#         "password": result.get("P", ""),
+#         "security": sec[2],
+#     }
+
+
+def parse(qr_text: str) -> dict[str, str | None]:
+    if not qr_text.startswith("WIFI:"):
+        raise ValueError("Not a WiFi QR code")
+
+    content = qr_text.removeprefix("WIFI:")
+    parts = content.split(";")
+
+    data = {}
+
+    for part in parts:
+        if part == "":
+            continue
+
+        if ":" not in part:
+            continue
+
+        key, value = part.split(":", 1)
+        data[key] = value
+
     return {
-        "ssid": result.get("S", ""),
-        "password": result.get("P", ""),
-        "security": sec[2],
+        "ssid": data.get("S"),
+        "password": data.get("P"),
+        "security": data.get("T", "nopass"),
     }

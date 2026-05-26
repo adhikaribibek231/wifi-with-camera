@@ -23,6 +23,8 @@ def main() -> None:
     print("\nFinal detected QR content: ")
     print(qr_text)
     result = parse(qr_text)
+    print("")
+    print("")
     print(result)
 
 
