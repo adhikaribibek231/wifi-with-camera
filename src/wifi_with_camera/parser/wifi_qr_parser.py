@@ -39,15 +39,54 @@ Example:
 #         "security": sec[2],
 #     }
 
+from dataclasses import dataclass
 
-def parse(qr_text: str) -> dict[str, str | None]:
+
+@dataclass
+class WifiCredentials:
+    ssid: str
+    password: str | None
+    security: str
+
+
+def split_unescaped_semicolons(text: str) -> list[str]:
+    parts: list[str] = []
+    current: list[str] = []
+    escaped = False
+
+    for char in text:
+        if escaped:
+            current.append(char)
+            escaped = False
+            continue
+
+        if char == "\\":
+            escaped = True
+            continue
+
+        if char == ";":
+            parts.append("".join(current))
+            current = []
+            continue
+
+        current.append(char)
+
+    if escaped:
+        current.append("\\")
+
+    parts.append("".join(current))
+
+    return parts
+
+
+def parse(qr_text: str) -> WifiCredentials:
     if not qr_text.startswith("WIFI:"):
         raise ValueError("Not a WiFi QR code")
 
     content = qr_text.removeprefix("WIFI:")
-    parts = content.split(";")
+    parts = split_unescaped_semicolons(content)
 
-    data = {}
+    data: dict[str, str] = {}
 
     for part in parts:
         if part == "":
@@ -59,8 +98,18 @@ def parse(qr_text: str) -> dict[str, str | None]:
         key, value = part.split(":", 1)
         data[key] = value
 
-    return {
-        "ssid": data.get("S"),
-        "password": data.get("P"),
-        "security": data.get("T", "nopass"),
-    }
+    ssid = data.get("S")
+    security = data.get("T", "nopass")
+    password = data.get("P")
+
+    if not ssid:
+        raise ValueError("WiFi QR code does not contain an SSID")
+
+    if security != "nopass" and not password:
+        raise ValueError("Secured WiFi QR code does not contain a password")
+
+    return WifiCredentials(
+        ssid=ssid,
+        password=password,
+        security=security,
+    )
