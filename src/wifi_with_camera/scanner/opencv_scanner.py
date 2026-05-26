@@ -30,7 +30,9 @@ def scan() -> str | None:
     if not cap.isOpened():
         print("Error: Could not open webcam.")
         return None
+
     detected_data: str | None = None
+
     try:
         cv2.namedWindow(window_name)
 
@@ -41,24 +43,26 @@ def scan() -> str | None:
                 print("Error: Could not read frame from webcam.")
                 break
 
-            frame = cv2.flip(frame, 1)
-
             data, points, _ = detector.detectAndDecode(frame)
+            display_frame = cv2.flip(frame, 1)
 
             if data:
                 detected_data = data
                 print(f"QR Code Detected: {detected_data}")
 
                 if points is not None:
-                    points = points[0].astype(int)
+                    frame_width = frame.shape[1]
 
-                    for i in range(len(points)):
-                        pt1 = tuple(points[i])
-                        pt2 = tuple(points[(i + 1) % len(points)])
-                        cv2.line(frame, pt1, pt2, (0, 255, 0), 3)
+                    mirrored_points = points[0].astype(int)
+                    mirrored_points[:, 0] = frame_width - 1 - mirrored_points[:, 0]
+
+                    for i in range(len(mirrored_points)):
+                        pt1 = tuple(mirrored_points[i])
+                        pt2 = tuple(mirrored_points[(i + 1) % len(mirrored_points)])
+                        cv2.line(display_frame, pt1, pt2, (0, 255, 0), 3)
 
                 cv2.putText(
-                    frame,
+                    display_frame,
                     "QR detected. Closing...",
                     (30, 40),
                     cv2.FONT_HERSHEY_SIMPLEX,
@@ -67,17 +71,18 @@ def scan() -> str | None:
                     2,
                 )
 
-                cv2.imshow(window_name, frame)
+                cv2.imshow(window_name, display_frame)
                 cv2.waitKey(1200)
                 break
 
-            cv2.imshow(window_name, frame)
+            cv2.imshow(window_name, display_frame)
 
             key = cv2.waitKey(1) & 0xFF
 
             if key == ord("q"):
                 print("Scanner closed by user.")
                 break
+
             try:
                 if cv2.getWindowProperty(window_name, cv2.WND_PROP_VISIBLE) < 1:
                     print("Scanner window closed.")
@@ -85,6 +90,7 @@ def scan() -> str | None:
             except cv2.error:
                 print("Scanner window closed.")
                 break
+
     finally:
         cap.release()
         cv2.destroyAllWindows()
