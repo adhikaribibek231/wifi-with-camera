@@ -103,6 +103,7 @@ wifi-with-camera/
 │       │
 │       ├── scanner/
 │       │   ├── __init__.py
+│       │   ├── decoder.py
 │       │   └── opencv_scanner.py
 │       │
 │       ├── parser/
@@ -127,7 +128,7 @@ wifi-with-camera/
     └── test_linux_nmcli.py
 ```
 
-Some files are placeholders during early development.
+Some platform-specific pieces are still planned for later phases.
 
 ---
 
@@ -153,17 +154,27 @@ uv run wwc
 
 ### `scanner/opencv_scanner.py`
 
-Handles webcam access and QR detection using OpenCV.
+Handles webcam access and frame display helpers using OpenCV.
 
 Responsibilities:
 
 - open the webcam
 - read video frames
-- detect QR codes
+- pass frames to the QR decoder
 - return the decoded QR text
 - handle camera/window cleanup safely
 
 This module should only care about scanning. It should not parse Wi-Fi credentials or connect to networks.
+
+---
+
+### `scanner/decoder.py`
+
+Decodes QR codes from camera frames using ZXing-C++ through the `zxing-cpp`
+Python package.
+
+This decoder replaced OpenCV's built-in QR decoder because it is more reliable
+for real-world Wi-Fi QR codes and avoids noisy OpenCV QR decoder warnings.
 
 ---
 
@@ -238,8 +249,8 @@ PASSWORD=MyPassword
 PySide6 desktop GUI.
 
 The GUI starts the webcam automatically and displays the live camera preview
-inside the app window. OpenCV provides webcam frames and QR detection, while
-PySide6 owns the application window and event loop.
+inside the app window. OpenCV provides webcam frames, ZXing-C++ decodes QR
+codes, and PySide6 owns the application window and event loop.
 
 Current GUI features:
 
@@ -370,13 +381,14 @@ The current pre-commit setup is intended to run:
 Core application:
 
 - Python
-- OpenCV
+- OpenCV for webcam frames
+- ZXing-C++ / `zxing-cpp` for QR decoding
 - NetworkManager / `nmcli` on Linux
 - `netsh wlan` on Windows
 
-Future desktop UI:
+Desktop UI:
 
-- PyQt6 or PySide6
+- PySide6
 
 Development tooling:
 
@@ -398,24 +410,26 @@ Future distribution options:
 
 ## Current Status
 
-Early development.
+Linux-first MVP.
 
 The current Linux-first MVP flow is:
 
 ```text
-Open webcam -> scan QR code -> parse Wi-Fi credentials -> display result -> optionally connect with nmcli
+Open webcam -> decode QR code -> parse Wi-Fi credentials -> display result -> optionally connect with nmcli
 ```
 
 Implemented so far:
 
-- webcam QR scanning with OpenCV
+- webcam frame capture with OpenCV
+- QR decoding with ZXing-C++
 - Wi-Fi QR parsing into a `WifiCredentials` dataclass
 - escaped semicolon and colon handling in SSIDs and passwords
 - result display with copy-friendly output
 - Linux `nmcli` command building and optional connection attempt
+- PySide6 desktop GUI with in-app live preview
 - parser and Linux command-builder tests
 
-Windows support and a polished desktop GUI are planned later.
+Windows support and installable builds are planned later.
 
 ---
 
@@ -462,6 +476,7 @@ Scan a Wi-Fi QR code and help the user connect from desktop.
 - [x] Show camera preview
 - [x] Detect QR code
 - [x] Decode QR text
+- [x] Upgrade QR decoding from OpenCV decoder to ZXing-C++
 - [x] Handle closing the camera window safely
 
 ### Phase 2: Wi-Fi QR Parser
@@ -529,7 +544,7 @@ For that reason:
 - credentials should not be logged unnecessarily
 - credentials should not be sent to any server
 - password display should be intentional and visible to the user
-- future GUI versions should include a password show/hide option
+- the GUI includes a password show/hide option
 
 ---
 
