@@ -1,33 +1,96 @@
-"""
-Camera and QR code detection module.
+"""Camera frame capture and QR code detection helpers."""
 
-Responsibilities:
-  - Open webcam using OpenCV
-  - Read video frames
-  - Detect QR codes in frames using cv2.QRCodeDetector
-  - Return raw QR text when detected
-
-Functions:
-  scan() -> str | None
-      Opens camera, captures frames, detects QR codes.
-      Returns the QR text when a code is found, None if cancelled.
-
-Example:
-    qr_text = scan()
-    if qr_text:
-        print(f"QR detected: {qr_text}")
-"""
+from dataclasses import dataclass
+from typing import cast
 
 import cv2
+import numpy as np
+from numpy.typing import NDArray
+
+Frame = NDArray[np.uint8]
+QRPoints = NDArray[np.float32]
+
+
+@dataclass(frozen=True)
+class QRDetection:
+    text: str
+    points: QRPoints | None
+
+
+class OpenCVScanner:
+    """Small reusable wrapper around OpenCV webcam capture and QR detection."""
+
+    def __init__(self, camera_index: int = 0) -> None:
+        self.capture = cv2.VideoCapture(camera_index)
+        self.detector = cv2.QRCodeDetector()
+
+    def is_opened(self) -> bool:
+        return self.capture.isOpened()
+
+    def read_frame(self) -> Frame | None:
+        success, frame = self.capture.read()
+        if not success:
+            return None
+
+        return cast(Frame, frame)
+
+    def detect_qr_code(self, frame: Frame) -> QRDetection | None:
+        data, points, _ = self.detector.detectAndDecode(frame)
+        if not data:
+            return None
+
+        return QRDetection(text=str(data), points=cast(QRPoints | None, points))
+
+    def detect_qr(self, frame: Frame) -> str | None:
+        detection = self.detect_qr_code(frame)
+        if detection is None:
+            return None
+
+        return detection.text
+
+    def release(self) -> None:
+        self.capture.release()
+
+
+def draw_qr_overlay(
+    frame: Frame,
+    points: QRPoints | None,
+    message: str = "QR detected",
+) -> None:
+    if points is not None:
+        outline = points[0].astype(int)
+
+        for index in range(len(outline)):
+            start = tuple(int(value) for value in outline[index])
+            end = tuple(int(value) for value in outline[(index + 1) % len(outline)])
+            cv2.line(frame, start, end, (0, 255, 0), 3)
+
+    cv2.putText(
+        frame,
+        message,
+        (30, 40),
+        cv2.FONT_HERSHEY_SIMPLEX,
+        1,
+        (0, 255, 0),
+        2,
+    )
+
+
+def mirror_qr_points(points: QRPoints | None, frame_width: int) -> QRPoints | None:
+    if points is None:
+        return None
+
+    mirrored_points = points.copy()
+    mirrored_points[:, :, 0] = frame_width - 1 - mirrored_points[:, :, 0]
+    return mirrored_points
 
 
 def scan() -> str | None:
     window_name = "Wi-Fi QR Scanner"
 
-    cap = cv2.VideoCapture(0)
-    detector = cv2.QRCodeDetector()
+    scanner = OpenCVScanner()
 
-    if not cap.isOpened():
+    if not scanner.is_opened():
         print("Error: Could not open webcam.")
         return None
 
@@ -37,40 +100,24 @@ def scan() -> str | None:
         cv2.namedWindow(window_name)
 
         while True:
-            ret, frame = cap.read()
-            # ret = whether camera reading succeeded or not True or False
-            if not ret:
+            frame = scanner.read_frame()
+            if frame is None:
                 print("Error: Could not read frame from webcam.")
                 break
 
-            data, points, _ = detector.detectAndDecode(frame)  # most important line
-            # points contains the QR code boundary coordinates.
-            display_frame = cv2.flip(frame, 1)
+            display_frame = cast(Frame, cv2.flip(frame, 1))
+            detection = scanner.detect_qr_code(frame)
 
-            if data:
-                detected_data = data
+            if detection is not None:
+                detected_data = detection.text
                 print(f"QR Code Detected: {detected_data}")
 
-                if points is not None:
-                    frame_width = frame.shape[1]
-
-                    mirrored_points = points[0].astype(int)
-                    mirrored_points[:, 0] = frame_width - 1 - mirrored_points[:, 0]
-                    # Mirror the x-coordinates because the displayed frame was flipped horizontally (valid x range: 0 to frame_width-1)
-
-                    for i in range(len(mirrored_points)):
-                        pt1 = tuple(mirrored_points[i])
-                        pt2 = tuple(mirrored_points[(i + 1) % len(mirrored_points)])
-                        cv2.line(display_frame, pt1, pt2, (0, 255, 0), 3)
-
-                cv2.putText(
-                    display_frame,
-                    "QR detected. Closing...",
-                    (30, 40),
-                    cv2.FONT_HERSHEY_SIMPLEX,
-                    1,
-                    (0, 255, 0),
-                    2,
+                mirrored_points = mirror_qr_points(
+                    detection.points,
+                    frame_width=frame.shape[1],
+                )
+                draw_qr_overlay(
+                    display_frame, mirrored_points, "QR detected. Closing..."
                 )
 
                 cv2.imshow(window_name, display_frame)
@@ -94,7 +141,7 @@ def scan() -> str | None:
                 break
 
     finally:
-        cap.release()
+        scanner.release()
         cv2.destroyAllWindows()
 
     return detected_data
