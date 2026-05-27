@@ -9,7 +9,7 @@ import cv2
 from PySide6 import QtCore, QtGui, QtWidgets
 
 from wifi_with_camera.network.base import NetworkConnectionError
-from wifi_with_camera.network.linux_nmcli import connect_to_wifi
+from wifi_with_camera.network.connector import connect_to_wifi
 from wifi_with_camera.parser.wifi_qr_parser import WifiCredentials, parse
 from wifi_with_camera.scanner.opencv_scanner import (
     Frame,

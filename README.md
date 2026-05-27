@@ -4,10 +4,12 @@ Connect to Wi-Fi networks by scanning Wi-Fi QR codes with your webcam.
 
 WWC is a desktop utility that lets you scan a Wi-Fi QR code, read the Wi-Fi details, and connect from your computer. The goal is to bring the phone-like "scan and connect" Wi-Fi experience to desktop systems.
 
-The project is currently Linux-first, with Windows support planned. The current
-MVP includes both a CLI flow and a simple PySide6 desktop GUI. It can scan a QR
-code, parse the Wi-Fi credentials, display copy-friendly results, and optionally
-try to connect on Linux through NetworkManager's `nmcli`.
+The project is currently Linux-first, with initial Windows support in progress.
+The current MVP includes both a CLI flow and a simple PySide6 desktop GUI. It can
+scan a QR code, parse the Wi-Fi credentials, display copy-friendly results, and
+optionally try to connect on Linux through NetworkManager's `nmcli`. A Windows
+`netsh wlan` backend exists and is selected automatically on Windows, but still
+needs manual connection testing on Windows.
 
 > WWC is not currently designed as a PyPI package for end users.  
 > The Python packaging setup exists mainly to keep the project clean, installable in development, and easy to run locally with `uv run wwc`.
@@ -113,7 +115,9 @@ wifi-with-camera/
 │       ├── network/
 │       │   ├── __init__.py
 │       │   ├── base.py
-│       │   └── linux_nmcli.py
+│       │   ├── connector.py
+│       │   ├── linux_nmcli.py
+│       │   └── windows_netsh.py
 │       │
 │       ├── display/
 │       │   ├── __init__.py
@@ -212,6 +216,18 @@ platform-specific code stays separated from the rest of the app.
 
 ---
 
+### `network/connector.py`
+
+Chooses the Wi-Fi connection backend for the current operating system.
+
+- Windows uses `network/windows_netsh.py`
+- Other platforms use `network/linux_nmcli.py`
+
+Both the CLI and GUI import `connect_to_wifi` from this module so platform
+selection stays in one place.
+
+---
+
 ### `network/linux_nmcli.py`
 
 Linux-specific Wi-Fi connector using NetworkManager's `nmcli`.
@@ -226,6 +242,24 @@ Responsibilities:
 - raise clear connection errors
 
 This is the first automatic connection backend in the project.
+
+---
+
+### `network/windows_netsh.py`
+
+Windows-specific Wi-Fi connector using `netsh wlan`.
+
+Responsibilities:
+
+- generate a temporary Windows Wi-Fi XML profile
+- add the profile using `netsh wlan add profile`
+- request a connection using `netsh wlan connect`
+- support WPA/WPA2 personal networks and open networks
+- delete the temporary XML profile file after use
+- raise clear connection errors
+
+The command-building and XML-generation behavior is covered by tests. Actual
+Windows Wi-Fi connection testing should be done on a Windows machine or VM.
 
 ---
 
@@ -410,7 +444,7 @@ Future distribution options:
 
 ## Current Status
 
-Linux-first MVP.
+Linux-first MVP with an initial Windows connector.
 
 The current Linux-first MVP flow is:
 
@@ -426,10 +460,12 @@ Implemented so far:
 - escaped semicolon and colon handling in SSIDs and passwords
 - result display with copy-friendly output
 - Linux `nmcli` command building and optional connection attempt
+- Windows `netsh wlan` profile generation and connection commands
+- automatic backend selection for Linux and Windows
 - PySide6 desktop GUI with in-app live preview
-- parser and Linux command-builder tests
+- parser, Linux command-builder, and Windows profile/command tests
 
-Windows support and installable builds are planned later.
+Windows manual connection testing and installable builds are planned later.
 
 ---
 
@@ -442,7 +478,7 @@ WWC aims to be:
 - privacy-friendly
 - simple to use
 - useful even without automatic connection
-- Linux-first, with Windows support planned
+- Linux-first, with Windows support in progress
 - contributor-friendly
 - understandable for learners and new contributors
 
@@ -518,11 +554,14 @@ Scan a Wi-Fi QR code and help the user connect from desktop.
 
 ### Phase 6: Windows Support
 
-- [ ] Research `netsh wlan` workflow
-- [ ] Create Windows connector
-- [ ] Test Wi-Fi profile creation
+- [x] Research `netsh wlan` workflow
+- [x] Create Windows connector
+- [x] Generate Windows Wi-Fi XML profiles
+- [x] Wire automatic Windows/Linux backend selection
+- [x] Add Windows-specific error messages
+- [x] Add command/XML unit tests
+- [ ] Test Wi-Fi profile creation on Windows
 - [ ] Test Windows connection flow
-- [ ] Add Windows-specific error messages
 
 ### Phase 7: Installable Builds
 

@@ -6,12 +6,12 @@ This module orchestrates the workflow:
   2. Detect a QR code in the frame
   3. Parse QR text to extract Wi-Fi credentials
   4. Display the parsed result
-  5. Optionally connect to the Wi-Fi network using the Linux nmcli backend
+  5. Optionally connect to the Wi-Fi network using the platform backend
 """
 
 from wifi_with_camera.display.result_display import display_credentials, display_error
 from wifi_with_camera.network.base import NetworkConnectionError
-from wifi_with_camera.network.linux_nmcli import connect_to_wifi
+from wifi_with_camera.network.connector import connect_to_wifi
 from wifi_with_camera.parser.wifi_qr_parser import parse
 from wifi_with_camera.scanner.opencv_scanner import scan
 
