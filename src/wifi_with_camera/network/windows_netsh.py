@@ -9,6 +9,7 @@ from pathlib import Path
 import shutil
 import subprocess
 import tempfile
+import time
 from typing import cast
 import xml.etree.ElementTree as ET
 
@@ -42,6 +43,10 @@ def build_netsh_connect_command(credentials: WifiCredentials) -> list[str]:
         f"name={credentials.ssid}",
         f"ssid={credentials.ssid}",
     ]
+
+
+def build_netsh_show_interfaces_command() -> list[str]:
+    return ["netsh", "wlan", "show", "interfaces"]
 
 
 def build_windows_wifi_profile_xml(credentials: WifiCredentials) -> str:
@@ -123,12 +128,23 @@ def connect_to_wifi(credentials: WifiCredentials) -> ConnectionResult:
                 connect_result,
                 default_message="Could not connect to Wi-Fi",
             )
+
+        connection_confirmed = wait_for_connection(credentials)
     finally:
         profile_path.unlink(missing_ok=True)
 
+    if connection_confirmed:
+        return ConnectionResult(
+            success=True,
+            message=f"Successfully connected to {credentials.ssid}",
+        )
+
     return ConnectionResult(
         success=True,
-        message=f"Connection requested for {credentials.ssid}",
+        message=(
+            f"Connection requested for {credentials.ssid}, "
+            "but Windows did not confirm it yet"
+        ),
     )
 
 
@@ -147,6 +163,47 @@ def write_temp_profile(credentials: WifiCredentials) -> Path:
 
 def run_netsh(command: list[str]) -> subprocess.CompletedProcess[str]:
     return subprocess.run(command, capture_output=True, text=True, check=False)
+
+
+def wait_for_connection(
+    credentials: WifiCredentials,
+    attempts: int = 8,
+    delay_seconds: float = 0.5,
+) -> bool:
+    for attempt in range(attempts):
+        result = run_netsh(build_netsh_show_interfaces_command())
+        output = result.stdout or result.stderr
+
+        if result.returncode == 0 and is_connected_to_ssid(output, credentials.ssid):
+            return True
+
+        if attempt < attempts - 1:
+            time.sleep(delay_seconds)
+
+    return False
+
+
+def is_connected_to_ssid(output: str, expected_ssid: str) -> bool:
+    connected = False
+    ssid: str | None = None
+
+    for line in output.splitlines():
+        key, separator, value = line.partition(":")
+        if separator == "":
+            continue
+
+        key = key.strip().lower()
+        value = value.strip()
+
+        if key == "state":
+            connected = value.lower() == "connected"
+        elif key == "ssid":
+            ssid = value
+
+        if connected and ssid == expected_ssid:
+            return True
+
+    return False
 
 
 def translate_netsh_error(

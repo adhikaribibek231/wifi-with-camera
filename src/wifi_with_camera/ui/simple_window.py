@@ -27,10 +27,12 @@ class MyWidget(QtWidgets.QWidget):
         self.credentials: WifiCredentials | None = None
         self.scanner: OpenCVScanner | None = None
         self.last_qr_text: str | None = None
+        self.min_camera_height = 200
+        self.max_camera_height = 420
 
         self.setWindowTitle("Wi-Fi QR Scanner")
-        self.resize(860, 760)
-        self.setMinimumSize(720, 640)
+        self.resize(860, 720)
+        self.setMinimumSize(640, 560)
 
         self.title_label = QtWidgets.QLabel("Wi-Fi QR Scanner")
         self.title_label.setObjectName("titleLabel")
@@ -38,10 +40,11 @@ class MyWidget(QtWidgets.QWidget):
         self.camera_label = QtWidgets.QLabel("Starting camera...")
         self.camera_label.setObjectName("cameraPreview")
         self.camera_label.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
-        self.camera_label.setMinimumSize(640, 420)
+        self.camera_label.setMinimumSize(480, self.min_camera_height)
+        self.camera_label.setFixedHeight(340)
         self.camera_label.setSizePolicy(
             QtWidgets.QSizePolicy.Policy.Expanding,
-            QtWidgets.QSizePolicy.Policy.Expanding,
+            QtWidgets.QSizePolicy.Policy.Fixed,
         )
 
         self.scan_button = QtWidgets.QPushButton("Restart camera")
@@ -76,8 +79,11 @@ class MyWidget(QtWidgets.QWidget):
         self.status_label = QtWidgets.QLabel("Ready")
         self.status_label.setObjectName("statusLabel")
 
+        self.details_title_label = QtWidgets.QLabel("Network details")
+        self.details_title_label.setObjectName("sectionTitle")
+
         form_layout = QtWidgets.QFormLayout()
-        form_layout.setContentsMargins(14, 14, 14, 14)
+        form_layout.setContentsMargins(0, 0, 0, 0)
         form_layout.setHorizontalSpacing(16)
         form_layout.setVerticalSpacing(12)
         form_layout.addRow("SSID:", self.ssid_label)
@@ -85,8 +91,15 @@ class MyWidget(QtWidgets.QWidget):
         form_layout.addRow("Password:", self.password_label)
         form_layout.addRow("", self.show_password_checkbox)
 
-        credentials_box = QtWidgets.QGroupBox("Network details")
-        credentials_box.setLayout(form_layout)
+        details_layout = QtWidgets.QVBoxLayout()
+        details_layout.setContentsMargins(18, 16, 18, 18)
+        details_layout.setSpacing(12)
+        details_layout.addWidget(self.details_title_label)
+        details_layout.addLayout(form_layout)
+
+        credentials_box = QtWidgets.QFrame()
+        credentials_box.setObjectName("detailsBox")
+        credentials_box.setLayout(details_layout)
 
         button_layout = QtWidgets.QHBoxLayout()
         button_layout.setSpacing(10)
@@ -101,8 +114,8 @@ class MyWidget(QtWidgets.QWidget):
         header_layout.addWidget(self.scan_button)
 
         main_layout = QtWidgets.QVBoxLayout(self)
-        main_layout.setContentsMargins(24, 24, 24, 24)
-        main_layout.setSpacing(14)
+        main_layout.setContentsMargins(20, 20, 20, 20)
+        main_layout.setSpacing(12)
         main_layout.addLayout(header_layout)
         main_layout.addWidget(self.camera_label)
         main_layout.addWidget(credentials_box)
@@ -113,6 +126,7 @@ class MyWidget(QtWidgets.QWidget):
         self.camera_timer.timeout.connect(self.update_camera_frame)
 
         self.apply_styles()
+        self.update_camera_height()
         self.update_credentials(None)
         self.start_camera()
 
@@ -140,20 +154,17 @@ class MyWidget(QtWidgets.QWidget):
                 font-size: 16px;
             }
 
-            QGroupBox {
+            QFrame#detailsBox {
                 background: #ffffff;
                 border: 1px solid #d9e1ea;
                 border-radius: 8px;
-                font-weight: 700;
-                margin-top: 12px;
-                padding-top: 10px;
             }
 
-            QGroupBox::title {
+            QLabel#sectionTitle {
+                background: transparent;
                 color: #475569;
-                subcontrol-origin: margin;
-                left: 12px;
-                padding: 0 6px;
+                font-size: 15px;
+                font-weight: 700;
             }
 
             QLabel[role="value"] {
@@ -370,6 +381,17 @@ class MyWidget(QtWidgets.QWidget):
             return
 
         self.password_label.setText("*" * len(password))
+
+    def resizeEvent(self, event: QtGui.QResizeEvent) -> None:
+        super().resizeEvent(event)
+        self.update_camera_height()
+
+    def update_camera_height(self) -> None:
+        reserved_height = 380
+        camera_height = self.height() - reserved_height
+        camera_height = max(self.min_camera_height, camera_height)
+        camera_height = min(self.max_camera_height, camera_height)
+        self.camera_label.setFixedHeight(camera_height)
 
     def closeEvent(self, event: QtGui.QCloseEvent) -> None:
         self.stop_camera()

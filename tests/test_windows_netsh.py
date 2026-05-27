@@ -9,8 +9,10 @@ from wifi_with_camera.network.windows_netsh import (
     WLAN_PROFILE_NAMESPACE,
     build_netsh_add_profile_command,
     build_netsh_connect_command,
+    build_netsh_show_interfaces_command,
     build_windows_wifi_profile_xml,
     connect_to_wifi,
+    is_connected_to_ssid,
     translate_netsh_error,
 )
 from wifi_with_camera.parser.wifi_qr_parser import WifiCredentials
@@ -45,6 +47,12 @@ def test_build_netsh_connect_command() -> None:
         "name=HomeWifi",
         "ssid=HomeWifi",
     ]
+
+
+def test_build_netsh_show_interfaces_command() -> None:
+    result = build_netsh_show_interfaces_command()
+
+    assert result == ["netsh", "wlan", "show", "interfaces"]
 
 
 def test_build_windows_profile_xml_for_wpa_wifi() -> None:
@@ -127,6 +135,17 @@ def test_connect_to_wifi_deletes_temp_profile(
 
     def fake_run_netsh(command: list[str]) -> subprocess.CompletedProcess[str]:
         commands.append(command)
+        if command == ["netsh", "wlan", "show", "interfaces"]:
+            return subprocess.CompletedProcess(
+                command,
+                returncode=0,
+                stdout=(
+                    "State                  : connected\n"
+                    "SSID                   : HomeWifi\n"
+                ),
+                stderr="",
+            )
+
         return subprocess.CompletedProcess(command, returncode=0, stdout="", stderr="")
 
     monkeypatch.setattr(
@@ -145,7 +164,7 @@ def test_connect_to_wifi_deletes_temp_profile(
     result = connect_to_wifi(credentials)
 
     assert result.success is True
-    assert result.message == "Connection requested for HomeWifi"
+    assert result.message == "Successfully connected to HomeWifi"
     assert commands == [
         [
             "netsh",
@@ -162,8 +181,80 @@ def test_connect_to_wifi_deletes_temp_profile(
             "name=HomeWifi",
             "ssid=HomeWifi",
         ],
+        [
+            "netsh",
+            "wlan",
+            "show",
+            "interfaces",
+        ],
     ]
     assert profile_paths[0].exists() is False
+
+
+def test_connect_to_wifi_reports_unconfirmed_connection(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    credentials = WifiCredentials(
+        ssid="HomeWifi",
+        password="secret123",
+        security="WPA",
+    )
+
+    def fake_is_netsh_available() -> bool:
+        return True
+
+    def fake_write_temp_profile(_credentials: WifiCredentials) -> Path:
+        path = Path("/tmp/windows-netsh-test-profile.xml")
+        path.write_text("profile", encoding="utf-8")
+        return path
+
+    def fake_run_netsh(command: list[str]) -> subprocess.CompletedProcess[str]:
+        if command == ["netsh", "wlan", "show", "interfaces"]:
+            return subprocess.CompletedProcess(
+                command,
+                returncode=0,
+                stdout=(
+                    "State                  : disconnected\nSSID                   : \n"
+                ),
+                stderr="",
+            )
+
+        return subprocess.CompletedProcess(command, returncode=0, stdout="", stderr="")
+
+    monkeypatch.setattr(
+        "wifi_with_camera.network.windows_netsh.is_netsh_available",
+        fake_is_netsh_available,
+    )
+    monkeypatch.setattr(
+        "wifi_with_camera.network.windows_netsh.write_temp_profile",
+        fake_write_temp_profile,
+    )
+    monkeypatch.setattr(
+        "wifi_with_camera.network.windows_netsh.run_netsh",
+        fake_run_netsh,
+    )
+    monkeypatch.setattr(
+        "wifi_with_camera.network.windows_netsh.time.sleep", lambda _: None
+    )
+
+    result = connect_to_wifi(credentials)
+
+    assert result.success is True
+    assert result.message == (
+        "Connection requested for HomeWifi, but Windows did not confirm it yet"
+    )
+
+
+def test_is_connected_to_ssid() -> None:
+    output = """
+    Name                   : Wi-Fi
+    State                  : connected
+    SSID                   : HomeWifi
+    BSSID                  : aa:bb:cc:dd:ee:ff
+    """
+
+    assert is_connected_to_ssid(output, "HomeWifi") is True
+    assert is_connected_to_ssid(output, "OtherWifi") is False
 
 
 def test_translate_netsh_network_not_found_error() -> None:
