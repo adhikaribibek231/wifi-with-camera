@@ -1,7 +1,11 @@
 """Camera frame capture and QR code detection helpers."""
 
+from collections.abc import Callable
 from dataclasses import dataclass
+import os
 from typing import cast
+
+os.environ.setdefault("OPENCV_LOG_LEVEL", "SILENT")
 
 import cv2
 import numpy as np
@@ -9,6 +13,15 @@ from numpy.typing import NDArray
 
 Frame = NDArray[np.uint8]
 QRPoints = NDArray[np.float32]
+OPENCV_LOG_LEVEL_SILENT = 0
+
+
+def silence_opencv_logs() -> None:
+    set_log_level = getattr(cv2, "setLogLevel", None)
+    if set_log_level is None:
+        return
+
+    cast(Callable[[int], None], set_log_level)(OPENCV_LOG_LEVEL_SILENT)
 
 
 @dataclass(frozen=True)
@@ -21,6 +34,7 @@ class OpenCVScanner:
     """Small reusable wrapper around OpenCV webcam capture and QR detection."""
 
     def __init__(self, camera_index: int = 0) -> None:
+        silence_opencv_logs()
         self.capture = cv2.VideoCapture(camera_index)
         self.detector = cv2.QRCodeDetector()
 
