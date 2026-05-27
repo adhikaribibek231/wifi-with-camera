@@ -1,9 +1,11 @@
 """Camera frame capture and QR code detection helpers."""
 
+import os
 from collections.abc import Callable
 from dataclasses import dataclass
-import os
 from typing import cast
+
+from wifi_with_camera.scanner.decoder import ZXingQRDecoder
 
 os.environ.setdefault("OPENCV_LOG_LEVEL", "SILENT")
 
@@ -36,7 +38,7 @@ class OpenCVScanner:
     def __init__(self, camera_index: int = 0) -> None:
         silence_opencv_logs()
         self.capture = cv2.VideoCapture(camera_index)
-        self.detector = cv2.QRCodeDetector()
+        self.detector = ZXingQRDecoder()
 
     def is_opened(self) -> bool:
         return self.capture.isOpened()
@@ -49,11 +51,15 @@ class OpenCVScanner:
         return cast(Frame, frame)
 
     def detect_qr_code(self, frame: Frame) -> QRDetection | None:
-        data, points, _ = self.detector.detectAndDecode(frame)
-        if not data:
+        result = self.detector.decode(frame)
+
+        if result is None:
             return None
 
-        return QRDetection(text=str(data), points=cast(QRPoints | None, points))
+        return QRDetection(
+            text=result.text,
+            points=None,
+        )
 
     def detect_qr(self, frame: Frame) -> str | None:
         detection = self.detect_qr_code(frame)

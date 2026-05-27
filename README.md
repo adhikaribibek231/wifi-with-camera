@@ -5,8 +5,9 @@ Connect to Wi-Fi networks by scanning Wi-Fi QR codes with your webcam.
 WWC is a desktop utility that lets you scan a Wi-Fi QR code, read the Wi-Fi details, and connect from your computer. The goal is to bring the phone-like "scan and connect" Wi-Fi experience to desktop systems.
 
 The project is currently Linux-first, with Windows support planned. The current
-MVP scans a QR code, parses the Wi-Fi credentials, prints a copy-friendly result,
-and can optionally try to connect on Linux through NetworkManager's `nmcli`.
+MVP includes both a CLI flow and a simple PySide6 desktop GUI. It can scan a QR
+code, parse the Wi-Fi credentials, display copy-friendly results, and optionally
+try to connect on Linux through NetworkManager's `nmcli`.
 
 > WWC is not currently designed as a PyPI package for end users.  
 > The Python packaging setup exists mainly to keep the project clean, installable in development, and easy to run locally with `uv run wwc`.
@@ -234,23 +235,28 @@ PASSWORD=MyPassword
 
 ### `ui/simple_window.py`
 
-Future desktop GUI.
+PySide6 desktop GUI.
 
-The first version of the project uses a simple OpenCV camera window. Later, this
-module can become the home of a real desktop interface.
+The GUI starts the webcam automatically and displays the live camera preview
+inside the app window. OpenCV provides webcam frames and QR detection, while
+PySide6 owns the application window and event loop.
 
-Possible future GUI features:
+Current GUI features:
 
-- live camera preview
-- scan status
-- detected SSID display
+- in-app live camera preview
+- camera restart button
+- mirrored preview with QR outline
+- detected SSID, security, and password display
 - password visibility toggle
 - copy password button
-- connect button
-- error messages
-- platform support warnings
+- manual connect button
+- status messages
 
-PyQt6 or PySide6 may be used for the future GUI.
+For local development, the GUI can be run with:
+
+```bash
+uv run python -m wifi_with_camera.ui.simple_window
+```
 
 ---
 
@@ -485,13 +491,15 @@ Scan a Wi-Fi QR code and help the user connect from desktop.
 
 ### Phase 5: Desktop GUI
 
-- [ ] Add proper desktop window
-- [ ] Add scan button
-- [ ] Add live preview
-- [ ] Add password visibility toggle
-- [ ] Add copy password button
-- [ ] Add connect button
-- [ ] Add status messages
+- [x] Add PySide6 desktop window
+- [x] Add in-app live camera preview
+- [x] Add camera restart button
+- [x] Add mirrored preview with QR outline
+- [x] Display SSID, security type, and password
+- [x] Add password visibility toggle
+- [x] Add copy password button
+- [x] Add manual connect button
+- [x] Add status messages
 
 ### Phase 6: Windows Support
 
