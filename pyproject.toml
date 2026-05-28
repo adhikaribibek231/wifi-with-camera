@@ -19,6 +19,7 @@ packages = ["src/wifi_with_camera"]
 
 [project.scripts]
 wwc = "wifi_with_camera.main:main"
+wwc-gui="wifi_with_camera.gui:main"
 
 [project.urls]
 Repository = "https://github.com/adhikaribibek231/wifi-with-camera"
@@ -27,6 +28,7 @@ Repository = "https://github.com/adhikaribibek231/wifi-with-camera"
 dev = [
     "mypy>=2.1.0",
     "pre-commit>=4.6.0",
+    "pyinstaller>=6.20.0",
     "pytest>=9.0.3",
     "ruff>=0.15.12",
 ]
