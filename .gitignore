@@ -59,8 +59,30 @@ Thumbs.db
 # Local agent/tool metadata
 .agents/
 .codex/
-build/
-dist/
+
+# Release artifacts
 tools/
 *.AppImage
 *.spec
+*.zip
+*.exe
+*.msi
+*.dmg
+*.deb
+*.rpm
+
+# Secrets / certificates
+*.key
+*.pem
+*.p12
+*.crt
+*.cert
+
+# Python tooling
+.pyre/
+.pytype/
+
+# Local debug output
+debug_frames/
+local_screenshots/
+tmp_screenshots/
