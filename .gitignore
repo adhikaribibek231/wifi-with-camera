@@ -59,3 +59,8 @@ Thumbs.db
 # Local agent/tool metadata
 .agents/
 .codex/
+build/
+dist/
+tools/
+*.AppImage
+*.spec
