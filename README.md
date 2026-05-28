@@ -4,12 +4,11 @@ Connect to Wi-Fi networks by scanning Wi-Fi QR codes with your webcam.
 
 WWC is a desktop utility that lets you scan a Wi-Fi QR code, read the Wi-Fi details, and connect from your computer. The goal is to bring the phone-like "scan and connect" Wi-Fi experience to desktop systems.
 
-The project is currently Linux-first, with initial Windows support in progress.
-The current MVP includes both a CLI flow and a simple PySide6 desktop GUI. It can
+The project is currently Linux-first, with initial Windows support tested. The
+current MVP includes both a CLI flow and a simple PySide6 desktop GUI. It can
 scan a QR code, parse the Wi-Fi credentials, display copy-friendly results, and
-optionally try to connect on Linux through NetworkManager's `nmcli`. A Windows
-`netsh wlan` backend exists and is selected automatically on Windows, but still
-needs manual connection testing on Windows.
+optionally try to connect on Linux through NetworkManager's `nmcli` or on
+Windows through `netsh wlan`.
 
 > WWC is not currently designed as a PyPI package for end users.  
 > The Python packaging setup exists mainly to keep the project clean, installable in development, and easy to run locally with `uv run wwc`.
@@ -289,6 +288,7 @@ codes, and PySide6 owns the application window and event loop.
 Current GUI features:
 
 - in-app live camera preview
+- camera selector for indexes 0-4
 - camera restart button
 - mirrored preview with QR outline
 - detected SSID, security, and password display
@@ -444,12 +444,12 @@ Future distribution options:
 
 ## Current Status
 
-Linux-first MVP with an initial Windows connector.
+Linux-first MVP with an initial Windows connector tested on Windows.
 
 The current Linux-first MVP flow is:
 
 ```text
-Open webcam -> decode QR code -> parse Wi-Fi credentials -> display result -> optionally connect with nmcli
+Open webcam -> decode QR code -> parse Wi-Fi credentials -> display result -> optionally connect with the platform backend
 ```
 
 Implemented so far:
@@ -462,10 +462,11 @@ Implemented so far:
 - Linux `nmcli` command building and optional connection attempt
 - Windows `netsh wlan` profile generation and connection commands
 - automatic backend selection for Linux and Windows
+- manually tested Windows connection flow
 - PySide6 desktop GUI with in-app live preview
 - parser, Linux command-builder, and Windows profile/command tests
 
-Windows manual connection testing and installable builds are planned later.
+Installable builds are planned later.
 
 ---
 
@@ -544,6 +545,7 @@ Scan a Wi-Fi QR code and help the user connect from desktop.
 
 - [x] Add PySide6 desktop window
 - [x] Add in-app live camera preview
+- [x] Add camera selector for indexes 0-4
 - [x] Add camera restart button
 - [x] Add mirrored preview with QR outline
 - [x] Display SSID, security type, and password
@@ -560,8 +562,8 @@ Scan a Wi-Fi QR code and help the user connect from desktop.
 - [x] Wire automatic Windows/Linux backend selection
 - [x] Add Windows-specific error messages
 - [x] Add command/XML unit tests
-- [ ] Test Wi-Fi profile creation on Windows
-- [ ] Test Windows connection flow
+- [x] Test Wi-Fi profile creation on Windows
+- [x] Test Windows connection flow
 
 ### Phase 7: Installable Builds
 

@@ -16,6 +16,7 @@ from wifi_with_camera.scanner.opencv_scanner import (
     OpenCVScanner,
     QRDetection,
     draw_qr_overlay,
+    list_available_cameras,
     mirror_qr_points,
 )
 
@@ -54,6 +55,11 @@ class MyWidget(QtWidgets.QWidget):
             QtWidgets.QSizePolicy.Policy.Fixed,
         )
         self.scan_button.clicked.connect(self.restart_camera)
+
+        self.camera_selector = QtWidgets.QComboBox()
+        self.camera_selector.setObjectName("cameraSelector")
+        self.populate_camera_selector()
+        self.camera_selector.currentIndexChanged.connect(self.restart_camera)
 
         self.ssid_label = QtWidgets.QLabel("-")
         self.security_label = QtWidgets.QLabel("-")
@@ -111,6 +117,7 @@ class MyWidget(QtWidgets.QWidget):
         header_layout.setSpacing(12)
         header_layout.addWidget(self.title_label)
         header_layout.addStretch()
+        header_layout.addWidget(self.camera_selector)
         header_layout.addWidget(self.scan_button)
 
         main_layout = QtWidgets.QVBoxLayout(self)
@@ -213,6 +220,16 @@ class MyWidget(QtWidgets.QWidget):
                 background: #eef2f7;
             }
 
+            QComboBox {
+                background: #ffffff;
+                border: 1px solid #cbd5e1;
+                border-radius: 6px;
+                font-weight: 700;
+                min-height: 34px;
+                min-width: 120px;
+                padding: 0 10px;
+            }
+
             QPushButton:disabled {
                 background: #e5e7eb;
                 border-color: #d1d5db;
@@ -230,16 +247,35 @@ class MyWidget(QtWidgets.QWidget):
         )
 
     def start_camera(self) -> None:
-        self.scanner = OpenCVScanner()
+        camera_index = self.selected_camera_index()
+        self.scanner = OpenCVScanner(camera_index=camera_index)
         if not self.scanner.is_opened():
             self.scanner.release()
             self.scanner = None
             self.camera_label.setText("Camera unavailable")
-            self.status_label.setText("Could not open webcam")
+            self.status_label.setText(f"Could not open Camera {camera_index}")
             return
 
         self.camera_timer.start(30)
         self.status_label.setText("Waiting for Wi-Fi QR code")
+
+    def populate_camera_selector(self) -> None:
+        camera_indexes = list_available_cameras()
+        if not camera_indexes:
+            camera_indexes = [0]
+
+        for index in camera_indexes:
+            self.camera_selector.addItem(f"Camera {index}", index)
+
+        default_index = camera_indexes.index(0) if 0 in camera_indexes else 0
+        self.camera_selector.setCurrentIndex(default_index)
+
+    def selected_camera_index(self) -> int:
+        camera_index = self.camera_selector.currentData()
+        if isinstance(camera_index, int):
+            return camera_index
+
+        return 0
 
     def restart_camera(self) -> None:
         self.stop_camera()

@@ -72,6 +72,19 @@ class OpenCVScanner:
         self.capture.release()
 
 
+def list_available_cameras(max_index: int = 5) -> list[int]:
+    silence_opencv_logs()
+    available: list[int] = []
+
+    for index in range(max_index):
+        capture = cv2.VideoCapture(index)
+        if capture.isOpened():
+            available.append(index)
+        capture.release()
+
+    return available
+
+
 def draw_qr_overlay(
     frame: Frame,
     points: QRPoints | None,
